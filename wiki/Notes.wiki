@@ -1,0 +1,18 @@
+#summary Discussion notes.
+
+= Plan =
+
+  # Write the permutation function.
+   * Given a string, generate the next permutation.
+   * Increment the right-most char, then roll over when necessary.
+   * OR Partition the domain into n sections.
+
+  # Start with a simple solution.
+
+  # Implement a sequential solution first in C for comparison purposes.
+
+
+
+bba = b00 + ba
+    = 
+
