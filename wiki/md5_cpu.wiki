@@ -1,0 +1,17 @@
+#summary CPU implementation of md5
+
+= md5.c =
+
+I've added the cpu md5 implementation. I used the standard RSA code and modified it.
+
+Amongst these modifications is a test function. I read in the Ubuntu dictionary file (which has about 100,000 words) and then hash them all.
+{{{
+stefano@stefano-pc:~/cudamd5$ time ./md5 -t
+98568 words digested.
+
+real    0m0.185s
+user    0m0.184s
+sys     0m0.000s
+}}}
+
+This is a substantial improvement on our original perl+md5sum app which took ~6mins to achieve the same task.
