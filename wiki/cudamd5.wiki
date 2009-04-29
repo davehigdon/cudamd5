@@ -7,7 +7,7 @@
 After many hours (~10?) of seting up the environments, collating, writting and debugging code, we're finally good to go :)
 
 {{{
-stefano@stefano-pc:~/cudamd5$ ./cudamd5 
+stefano@stefano-pc:~/cudamd5$ ./cudamd5 -q
 There is 1 device supporting CUDA
 
 Device 0: "GeForce 8600 GT"
@@ -27,5 +27,3 @@ Device 0: "GeForce 8600 GT"
 
 Test PASSED
 }}}
-
-
