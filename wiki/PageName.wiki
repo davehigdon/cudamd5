@@ -2,14 +2,17 @@
 
 = Application Speed =
 
-1st Run, May 31st:
+1st Run, May 31st:<BR>
 stefano@stefano-pc:~/CUDA$ time ./cudamd5 -cabcde -t4e510be093d346512011c3f4fe36e4af --min=1 --max=6
 Hash found: bababa
 4608 keys searched.
+<BR>
 
-real    0m1.032s
-user    0m0.840s
-sys     0m0.184s
+real    0m1.032s<BR>
+user    0m0.840s<BR>
+sys     0m0.184s<BR>
+<BR>
+*Throughput =~ 4,000 hashes/second.*
 
 
 Amazingly slow... We suspect lot's of memory coalescing.
