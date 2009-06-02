@@ -117,7 +117,9 @@ bool doHash(std::vector<std::string>& keys) {
   uint4* deviceDigests;
   UCHAR result[56];
 
-  // For each message
+  cudaError_t err = cudaGetLastError();
+  
+// For each message
   for (int i = 0; i != keys.size(); ++i) {
     const char* key = keys[i].c_str();
     hostMsgLengths[i] = keys[i].size();
@@ -126,28 +128,32 @@ bool doHash(std::vector<std::string>& keys) {
     cudaMalloc((void **)&hostMsgLocationsOnDevice[i], keys[i].length() * sizeof(UCHAR));
     cudaMemcpy(hostMsgLocationsOnDevice[i], key, keys[i].length(), cudaMemcpyHostToDevice);
     
+  err = cudaGetLastError();
+  if (cudaSuccess != err)
+    printf("1: %s\n", cudaGetErrorString(err));
     cudaMalloc((void **)&deviceMsgLengths, numThreadsPerGrid * sizeof(int));
     cudaMemcpy(deviceMsgLengths, hostMsgLengths, numThreadsPerGrid * sizeof(int), cudaMemcpyHostToDevice);
+  if (cudaSuccess != err)
+    printf("2: %s\n", cudaGetErrorString(err));
   }
   
   cudaMalloc((void **)&deviceMsgLocationsOnDevice, numThreadsPerGrid * sizeof(UCHAR*));
   cudaMemcpy(deviceMsgLocationsOnDevice, hostMsgLocationsOnDevice, sizeof(hostMsgLocationsOnDevice), cudaMemcpyHostToDevice);
+  if (cudaSuccess != err)
+    printf("3: %s\n", cudaGetErrorString(err));
 
   
   cudaMalloc((void **)&deviceDigests, numThreadsPerGrid * sizeof(uint4));
-  cudaError_t err = cudaGetLastError();
+  err = cudaGetLastError();
   if (cudaSuccess != err)
-    printf("1: %s\n", cudaGetErrorString(err));
-  
-    for (int i = 0; i != keys.size(); ++i)
-    hostDigests[i] = make_uint4(9, 9, 9, 9);
+    printf("4: %s\n", cudaGetErrorString(err));
     
   md5Hash <<< numBlocks, numThreadsPerBlock, sharedMem >>> (deviceMsgLocationsOnDevice, deviceMsgLengths, deviceDigests);
   //cudaThreadSynchronize();
   
     err = cudaGetLastError();
   if (cudaSuccess != err)
-    printf("2: %s\n", cudaGetErrorString(err));
+    printf("5: %s\n", cudaGetErrorString(err));
   cudaMemcpy(hostDigests, deviceDigests, sizeof(hostDigests), cudaMemcpyDeviceToHost);
   int ri = NOT_FOUND;
   int* resultAddress;
@@ -181,11 +187,11 @@ bool doHash(std::vector<std::string>& keys) {
   }
   err = cudaGetLastError();
   if (cudaSuccess != err)
-    printf("3: %s\n", cudaGetErrorString(err));
-  
-  for (int i = 0; i != keys.size(); ++i) {
-    //printf("%08x %08x %08x %08x\n", hostDigests[i].x, hostDigests[i].y, hostDigests[i].z, hostDigests[i].w);
-  }
+    printf("9: %s\n", cudaGetErrorString(err));
+
+  // Free memory
+  cudaFree(hostMsgLocationsOnDevice);
+  cudaFree(deviceMsgLengths);  
 }
 
 __global__ void md5Hash(UCHAR** messages, int* msgLengths, uint4* digests) {

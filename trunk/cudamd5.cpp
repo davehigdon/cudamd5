@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     //printf("Target (Reversed) Hash: %08x %08x %08x %08x\n", reversedTargetHash[0], reversedTargetHash[1], reversedTargetHash[2], reversedTargetHash[3]);
     initialiseConstants(reversedTargetHash);
 
-    int nKeys=0;
+    int nKeys=numThreadsPerGrid;
     printf("Testing with chunks of size %d\n", numThreadsPerGrid);
     vector<string> messages;
     while(true){
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
      
       if(doHash(messages))
         break;
-      nKeys+=64;
+      nKeys+=numThreadsPerGrid;
        if(message.length() > maxLen)
         break;
       
