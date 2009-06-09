@@ -2,7 +2,7 @@
 
 = Application Speed =
 
-1st Run, May 31st:<BR>
+*May 31st:*<BR>
 stefano@stefano-pc:~/CUDA$ time ./cudamd5 -cabcde -t4e510be093d346512011c3f4fe36e4af --min=1 --max=6
 Hash found: bababa
 4608 keys searched.
@@ -16,3 +16,32 @@ sys     0m0.184s<BR>
 
 
 Amazingly slow... We suspect lot's of memory coalescing.
+----
+
+*June 9th:*<BR>
+stefano@stefano-pc:~/Desktop/cudamd5$ time ./cudamd5 -cabcdefghijklmnopqrstuvwxyz -t01483e083bee3dc729fe1daa7df2fa42 --min=1 --max=5 
+Possible permutations:12356630
+<BR>
+
+real	0m12.132s<BR>
+user	0m11.353s<BR>
+sys	0m0.776s<BR>
+
+We re-ran this test 5 times:
+real	0m12.132s<BR>
+real	0m12.216s<BR>
+real	0m12.165s<BR>
+real	0m12.127s<BR>
+real	0m12.203s<BR>
+Average = 12.169
+*Throughput =~ 1 015 452.07 hashes/second.*
+
+stefano@stefano-pc:~/Desktop/cudamd5$ time ./cudamd5 -cabcdefghijklmnopqrstuvwxyz0123 -t99b5fb49d3934361b08d3a548d055471 --min=1 --max=5 
+Possible permutations:25137930
+<BR>
+
+real	0m24.055s<BR>
+user	0m22.737s<BR>
+sys	0m1.300s<BR>
+<BR>
+*Throughput =~ 1 045 018.91 hashes/second.*
