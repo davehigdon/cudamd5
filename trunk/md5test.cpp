@@ -87,6 +87,8 @@ static void MDTimeTrial ()
    Prints out message digest, a space, the string (in quotes) and a
    carriage return.
  */
+
+ 
 static void MDString (const char *inString)
 {
   MD5_CTX mdContext;

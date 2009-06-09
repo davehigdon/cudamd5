@@ -5,6 +5,7 @@
 #include "cutil.h"
 #include "gpuMD5.h"
 #include "constants.h"
+#include <math.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -20,8 +21,14 @@ typedef unsigned int UINT;
 
 UCHAR c2c (char c);
 
-//static void MDTimeTrial_CPU ();
-//static void MDString (char *inString);
+UINT findTotalPermutations(int charsetSize, int min, int max) {
+  UINT total = 0;
+  UINT i    = 0;
+  for(i=min; i<max+1;i++)
+    total += pow(charsetSize,i);
+  return total;
+}
+
 
 int main(int argc, char *argv[]) {
   bool isVerbose = false;
@@ -35,10 +42,12 @@ int main(int argc, char *argv[]) {
     ("help,?", "Produces this help message")
     ("query,q", "Checks system for CUDA compatibility")
     ("verbose,v", "Turns on verbose mode")
+    ("cpu", "Runs only on the CPU")
     ("target,t", po::value<string>(), "Target digest")
     ("charset,c", po::value<string>(), "Message character set")
     ("min", po::value<int>()->default_value(1), "Minimum message length")
     ("max", po::value<int>()->default_value(3), "Maximum message length")
+    ("dictionary,d", "Reads words from stdin")
   ;
 
   po::variables_map vm;
@@ -52,6 +61,28 @@ int main(int argc, char *argv[]) {
   }
   else if (vm.count("query")) {
     deviceQuery();
+  }
+  else if (vm.count("cpu")){
+    // DEBUG
+    string warning = "*** Note: CPU-version is not complete. ***\nIt does not yet check for the target hash; it runs through all keys and digests them.\n\n";
+    std::cout << warning << std::endl;
+  
+    string targetHash = vm["target"].as<string>();
+    minLen = vm["min"].as<int>();
+    maxLen = vm["max"].as<int>();
+    string charset(vm["charset"].as<string>());
+    Permutator p(charset);  
+    
+    string message(minLen, p.first);
+    string end(maxLen + 1, p.first);
+  
+    int nKeys=0;
+    do {
+      MDCheck(message.c_str());
+      message = p.permutate(message);
+      ++nKeys;
+    } while (message != end);
+    printf("Searched %d keys.\n", nKeys);
   }
   else if (vm.count("target") && vm.count("charset")) {    
     isVerbose = vm.count("verbose");
@@ -70,13 +101,7 @@ int main(int argc, char *argv[]) {
     
     string message(minLen, p.first);
     string end(maxLen + 1, p.first);
-        
-    /*
-    do {
-      MDString(message.c_str());
-      message = p.permutate(message);
-    } while (message != end);
-    */
+    
     
     // Getting the device properties.
     cudaDeviceProp deviceProp;
@@ -86,7 +111,6 @@ int main(int argc, char *argv[]) {
     int numThreadsPerGrid = numBlocks * numThreadsPerBlock;
     int sharedMem = deviceProp.sharedMemPerBlock / 2;
     
-    //UINT target[4];
     string targetHash = vm["target"].as<string>();
     
     // Reverse target endianess
@@ -98,37 +122,48 @@ int main(int argc, char *argv[]) {
       UINT w = c2c(targetHash[c+6]) << 4 | c2c(targetHash[c+7]);
       reversedTargetHash[c/8] = w << 24 | z << 16 | y << 8 | x;
     }
-    //target = make_uint4(reversedTargetHash[0], reversedTargetHash[1], reversedTargetHash[2], reversedTargetHash[3]);
-    //printf("Target (Reversed) Hash: %08x %08x %08x %08x\n", reversedTargetHash[0], reversedTargetHash[1], reversedTargetHash[2], reversedTargetHash[3]);
     initialiseConstants(reversedTargetHash);
-
-    int nKeys=numThreadsPerGrid;
-    printf("Testing with chunks of size %d\n", numThreadsPerGrid);
-    vector<string> messages;
-    while(true){
-      for (int i = 0; i != numThreadsPerGrid; ++i) {
+	
+	
+	UINT totalPermutations = findTotalPermutations(charset.length(),minLen,maxLen);
+	if (isVerbose){
+	  printf("Possible permutations:%d\n",totalPermutations);
+  	printf("Reversed target hash: %08x %08x %08x %08x\n", reversedTargetHash[0], reversedTargetHash[1],reversedTargetHash[2],reversedTargetHash[3]);
+	}
+	
+	vector<string> messages;
+    
+   // Populate messages vector with all possible permutations 
+	 for (int i = 0; i < totalPermutations; i++) {
         messages.push_back(message);
         message = p.permutate(message);
-      }
-     
-      if(doHash(messages))
-        break;
-      nKeys+=numThreadsPerGrid;
-       if(message.length() > maxLen)
-        break;
-      
-      messages.clear();
-     }
-    printf("%d keys searched.\n", nKeys);
-
+   }    
+    hashByBatch(messages,2000000);
+    printf("%d keys searched.\n", messages.size());
         
-  }
-  else {
+  } else if (vm.count("target") && vm.count("dictionary")){
+      // Load plaintext dictionary
+	  std::vector<std::string> words;
+	  std::cerr << "Loading words from stdin ...\n";
+	  std::string word;
+	  while(std::cin >> word)
+	  {
+		  words.push_back(word);
+	  }
+	  std::cout << "Loaded " << words.size() << " words.\n\n";
+	
+	  hashByBatch(words,2000000);
+	  
+	  std::cout << "Searched " << words.size() << " words." << std::endl;
+	
+  } else {
     cout << desc << endl;
   }
   
   return EXIT_SUCCESS;
 }
+
+
 
 UCHAR c2c (char c){
   return (UCHAR)((c > '9') ? (c - 'a' + 10) : (c - '0'));

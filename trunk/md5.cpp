@@ -32,6 +32,8 @@
  */
 
 #include "md5.h"
+#include <string.h>
+#include <stdio.h>
 
 /* forward declaration */
 static void Transform (UINT4 *buf, UINT4 *in);
@@ -262,3 +264,26 @@ static void Transform (UINT4 *buf, UINT4 *in)
   buf[2] += c;
   buf[3] += d;
 }
+
+bool MDCheck (const char* key){
+  MD5_CTX mdContext;
+  unsigned int len = strlen (key);
+
+  MD5Init (&mdContext);
+  unsigned char *uKey = (unsigned char*)key;
+  MD5Update (&mdContext, uKey, len);
+  MD5Final (&mdContext);
+
+ int i;
+ for (i = 0; i < 16; i++){
+   //printf ("%02x", mdContext.digest[i]);
+   
+   //TODO: Check for the target hash!
+   
+ }
+ //printf("\n");
+  
+  return false; 
+} 
+
+
