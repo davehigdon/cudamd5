@@ -51,3 +51,19 @@ user	0m22.737s<BR>
 sys	0m1.300s<BR>
 <BR>
 *Throughput =~ 1 045 018.91 hashes/second.*
+
+*June 10th, revision 71:*<BR>
+I decided to do a larger test: All lowercase letters and numbers up to a password size of 5:<BR>
+
+stefano@stefano-pc:~/Desktop/cudamd5$ time ./cudamd5 -c0123456789abcdefghijklmnopqrstuvwxyz -t95ebc3c7b3b9f1d2c40fec14415d3cb8 --min=1 --max=5 <BR>
+Found key: zzzzz� <BR>
+62193780 keys searched.<BR>
+
+real	4m3.933s<BR>
+user	0m57.560s<BR>
+sys	0m8.993s<BR>
+
+It took 30 seconds to initialise the 62M string vector, 2mins to do the hashing/searching/cracking and then it seemed to do nothing for 1min33s ... strange. I don't yet know why.
+
+However, assuming 2mins to search ~62M hashes:
+ *Throughput =~ 518 281.5 hashes/second.*
