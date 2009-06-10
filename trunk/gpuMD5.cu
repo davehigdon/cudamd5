@@ -98,11 +98,16 @@ void convertUint4(uint4 in, char* out) {
   
 
 }
+void resetResult(void) {
+  uint4 zero = make_uint4(0,0,0,0);
+  cudaMemcpyToSymbol(foundKey, &zero, 8);
+}
 
 void initialiseConstants(UINT* target) {
   // Copy target hash to the device (So that the comparison can be done on the GPU)
-  cudaMemcpyToSymbol(deviceTarget, target, sizeof(deviceTarget));  
-  //cudaMemcpyToSymbol(foundKey, 0, sizeof(int));
+  cudaMemcpyToSymbol(deviceTarget, target, sizeof(deviceTarget));
+  char zero = '0';   
+  cudaMemcpyToSymbol(foundKey, &zero, sizeof(zero));
 }
 
 
@@ -166,12 +171,14 @@ bool hashByBatch(std::vector<std::string>& keys, int batchSize) {
 bool doHash(std::vector<std::string>& keys) {
   using namespace std;
   
+  bool success = false;
+  
   // Getting the device properties.
   cudaDeviceProp deviceProp;
   cudaGetDeviceProperties(&deviceProp, 0);
-  int numBlocks = deviceProp.multiProcessorCount * 2;
-  int numThreadsPerBlock = NUM_THREADS_PER_BLOCK;
-  int numThreadsPerGrid = numBlocks * numThreadsPerBlock;
+  //int numBlocks = deviceProp.multiProcessorCount * 2;
+  //int numThreadsPerBlock = NUM_THREADS_PER_BLOCK;
+  //int numThreadsPerGrid = numBlocks * numThreadsPerBlock;
   int sharedMem = deviceProp.sharedMemPerBlock / 2;
   
   //Device variables  
@@ -182,8 +189,6 @@ bool doHash(std::vector<std::string>& keys) {
   //Host Variables  
   uint4* keys_h;
   int* lengths_h;
-  uint4* digests_h;
-  const char* key_cstr;
   int* foundKeyAddress;
   uint4 foundKey;
   //int* isFoundKey; *isFoundKey=0;
@@ -191,18 +196,18 @@ bool doHash(std::vector<std::string>& keys) {
   //cudaHostAlloc((void**)&isKeyFound,sizeof(int),cudaHostAllocMapped);
   
   UINT permutationSize = keys.size();
-  printf("\tPermutation Size: %d\n",permutationSize);
+  printf("\tBatch Size: %d\n",permutationSize);
   
   //Allocate memory to device variables;
   //fprintf(stderr,"Allocating memory for device variables\n");
   cudaMalloc((void**) &keys_d, permutationSize*sizeof(uint4));
-  printf("keys_d: %s\n", cudaGetErrorString(cudaGetLastError()));
+  //printf("keys_d: %s\n", cudaGetErrorString(cudaGetLastError()));
 
   cudaMalloc((void**) &lengths_d, permutationSize*sizeof(int));
-  printf("lengths_d: %s\n", cudaGetErrorString(cudaGetLastError()));
+  //printf("lengths_d: %s\n", cudaGetErrorString(cudaGetLastError()));
 
   cudaMalloc((void**) &digests_d, permutationSize*sizeof(uint4));
-  printf("digests_d: %s\n", cudaGetErrorString(cudaGetLastError()));
+  //printf("digests_d: %s\n", cudaGetErrorString(cudaGetLastError()));
 
   cudaMemset(lengths_d, permutationSize*sizeof(int),0);
 	
@@ -241,28 +246,37 @@ bool doHash(std::vector<std::string>& keys) {
   // Write result back
   cudaGetSymbolAddress((void**)&foundKeyAddress, "foundKey");
   cudaMemcpy((void**) &foundKey, foundKeyAddress, sizeof(uint4), cudaMemcpyDeviceToHost);
-  char result[16];
+  char result[16] = {'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
   convertUint4(foundKey,result);
-  fprintf(stderr,"RESULT: %s\n", result);
     
-  /*
-  //Declare Result Variables
+  if (result[0] == '0'){
+    fprintf(stderr,"Key not found.\n");
+  } else {
+    //printf("result[0] = %i|%c|%x\n", result[0]);
+    fprintf(stderr,"Found key: %s\n", result);
+    success = true;
+  }
+    
+  // Reset result for later runs
+  resetResult();
   
+  /*
+  // NOTE: Remember to uncomment the line at the end of transform() which records digest
+  //Declare Result Variables  
   uint4* keys_r;
   int* lengths_r;
   uint4* digests_r;
   
   //Allocate memory to result variables
-  
-  fprintf(stderr,"Allocating memory to result variables\n");
+  //printf("Allocating memory to result variables\n");
   keys_r = (uint4*) malloc(permutationSize*sizeof(uint4));
   lengths_r = (int*) malloc(permutationSize*sizeof(int));
   digests_r = (uint4*) malloc(permutationSize*sizeof(uint4));
   
   memset(lengths_r,permutationSize*sizeof(int),0);
-  //Copying memoty result variables
   
-  fprintf(stderr,"Copying data from device memory to result variables\n");
+  //Copying memoty result variables
+  //printf("Copying data from device memory to result variables\n");
   cudaMemcpy((void**) keys_r, keys_d, permutationSize*sizeof(uint4),cudaMemcpyDeviceToHost);
   cudaMemcpy((void**) lengths_r, lengths_d,permutationSize*sizeof(int),cudaMemcpyDeviceToHost);
   cudaMemcpy((void**) digests_r, digests_d, permutationSize*sizeof(uint4),cudaMemcpyDeviceToHost);
@@ -275,15 +289,17 @@ bool doHash(std::vector<std::string>& keys) {
   
 	
 	convertUint4(keys_r[i],kr);
-	printf("Key %d: %s Len: %d Digest: %08x %08x %08x %08x\n",i,kr, lengths_r[i], digests_r[i].w, digests_r[i].x, digests_r[i].y,digests_r[i].z);
+	printf("Key %d: %s Len: %d Digest: %08x %08x %08x %08x\n",i,kr, lengths_r[i], digests_r[i].x, digests_r[i].y,digests_r[i].z, digests_r[i].w);
    // printf("Uint4: %08x %08x %08x %08x\n", keys_r[i].x,keys_r[i].y,keys_r[i].z,keys_r[i].w);
    }
-*/
+  */
+
+
   cudaFree(keys_d);
   cudaFree(lengths_d);
   cudaFree(digests_d);
 
-  return 0;
+  (success)?true:false;
 }
 
 
@@ -397,19 +413,27 @@ __device__ void transform(uint4* message, UINT* in, uint4* digest) {
 	  foundKey = *message;
 	}
 	
+	// Un-comment line below to get digests back to host
   //*digest = make_uint4(a,b,c,d);
 }
 
 
+void reverseHash(uint4* hash){
+  //uint4 rHash;
+  //TODO
+}
+
+
+/*
 __device__ void pad(uint4* key_d, int *msgLength, UINT* paddedMessage) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;  
   
-  /*
-  for (i = 0; i != msgLength; ++i)
-    m[i] = message[i];
-  for(;i<56;i++)
-    m[i] = 0;
-  */
+  
+  //for (i = 0; i != msgLength; ++i)
+  //  m[i] = message[i];
+  //for(;i<56;i++)
+  //  m[i] = 0;
+  
   UCHAR* message = (UCHAR*) key_d;
   message[*msgLength] = 0x80;  
    
@@ -421,4 +445,5 @@ __device__ void pad(uint4* key_d, int *msgLength, UINT* paddedMessage) {
   paddedMessage[14] = *msgLength << 3;
   paddedMessage[15] = *msgLength >> 29;
 }
+*/
 

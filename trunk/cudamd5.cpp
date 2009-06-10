@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
       cout << "Target digest: " << vm["target"].as<string>() << endl;
       cout << "Message character set: " << vm["charset"].as<string>() << endl;
       cout << "Minimum message length: " <<  minLen << endl;
-      cout << "Maximum message length: " <<  maxLen << endl;
+      cout << "Maximum message length: " <<  maxLen << endl << endl;
     }
 
     string charset(vm["charset"].as<string>());
@@ -126,9 +126,10 @@ int main(int argc, char *argv[]) {
 	
 	
 	UINT totalPermutations = findTotalPermutations(charset.length(),minLen,maxLen);
+	
 	if (isVerbose){
-	  printf("Possible permutations:%d\n",totalPermutations);
-  	printf("Reversed target hash: %08x %08x %08x %08x\n", reversedTargetHash[0], reversedTargetHash[1],reversedTargetHash[2],reversedTargetHash[3]);
+  	printf("Reversed target hash: %08x %08x %08x %08x\n\n", reversedTargetHash[0], reversedTargetHash[1],reversedTargetHash[2],reversedTargetHash[3]);
+  	printf("About to search through %d keys...\n", totalPermutations);  //DEBUG
 	}
 	
 	vector<string> messages;
@@ -144,13 +145,28 @@ int main(int argc, char *argv[]) {
   } else if (vm.count("target") && vm.count("dictionary")){
       // Load plaintext dictionary
 	  std::vector<std::string> words;
-	  std::cerr << "Loading words from stdin ...\n";
+	  std::cout << "Loading words from stdin ...\n";
 	  std::string word;
 	  while(std::cin >> word)
 	  {
-		  words.push_back(word);
+	    if (word.size() < 16){
+  		  words.push_back(word);
+  		}
 	  }
 	  std::cout << "Loaded " << words.size() << " words.\n\n";
+	
+	  // Reverse target endianess
+	  string targetHash = vm["target"].as<string>();
+    UINT reversedTargetHash[4];
+    for (int c=0;c<targetHash.size();c+=8) {
+      UINT x = c2c(targetHash[c]) <<4 | c2c(targetHash[c+1]); 
+      UINT y = c2c(targetHash[c+2]) << 4 | c2c(targetHash[c+3]);
+      UINT z = c2c(targetHash[c+4]) << 4 | c2c(targetHash[c+5]);
+      UINT w = c2c(targetHash[c+6]) << 4 | c2c(targetHash[c+7]);
+      reversedTargetHash[c/8] = w << 24 | z << 16 | y << 8 | x;
+    }
+    // Initialise target hash (which is reversed due to endian-ess)
+    initialiseConstants(reversedTargetHash);	
 	
 	  hashByBatch(words,2000000);
 	  
