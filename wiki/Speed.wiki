@@ -66,4 +66,4 @@ sys	0m8.993s<BR>
 It took 30 seconds to initialise the 62M string vector, 2mins to do the hashing/searching/cracking and then it seemed to do nothing for 1min33s ... strange. I don't yet know why.
 
 However, assuming 2mins to search ~62M hashes:
- *Throughput =~ 518 281.5 hashes/second.*
+*Throughput =~ 518 281.5 hashes/second.*
