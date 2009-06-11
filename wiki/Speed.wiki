@@ -17,7 +17,7 @@ sys     0m0.184s<BR>
 *Throughput =~ 4,000 hashes/second.*
 
 
-Amazingly slow... We suspect lot's of memory coalescing.
+Amazingly slow... We suspect it's an issue with memory coalescing.
 ----
 
 *June 9th, revision 67:*<BR>
