@@ -167,7 +167,6 @@ bool hashByBatch(std::vector<std::string>& keys, int batchSize) {
   return false;
 }
 
-// md5Hash(message, device, host, length);
 bool doHash(std::vector<std::string>& keys) {
   using namespace std;
   
@@ -196,7 +195,7 @@ bool doHash(std::vector<std::string>& keys) {
   //cudaHostAlloc((void**)&isKeyFound,sizeof(int),cudaHostAllocMapped);
   
   UINT permutationSize = keys.size();
-  printf("\tBatch Size: %d\n",permutationSize);
+  //printf("\tBatch Size: %d\n",permutationSize);
   
   //Allocate memory to device variables;
   //fprintf(stderr,"Allocating memory for device variables\n");
@@ -249,10 +248,10 @@ bool doHash(std::vector<std::string>& keys) {
   char result[16] = {'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
   convertUint4(foundKey,result);
     
-  if (result[0] == '0'){
-    fprintf(stderr,"Key not found.\n");
+  if (result[0] == 0 || result[0] == 48){ //TODO: Fix me, I'm hacky!
+    //fprintf(stderr,"Key not found.\n");
   } else {
-    //printf("result[0] = %i|%c|%x\n", result[0]);
+    //printf(" * result[0] = %i|%c|%x\n", result[0]);
     fprintf(stderr,"Found key: %s\n", result);
     success = true;
   }
@@ -299,7 +298,7 @@ bool doHash(std::vector<std::string>& keys) {
   cudaFree(lengths_d);
   cudaFree(digests_d);
 
-  (success)?true:false;
+  if (success){return true;}else{return false;}
 }
 
 
