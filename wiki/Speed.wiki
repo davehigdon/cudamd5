@@ -65,5 +65,18 @@ sys	0m8.993s<BR>
 
 It took 30 seconds to initialise the 62M string vector, 2mins to do the hashing/searching/cracking and then it seemed to do nothing for 1min33s ... strange. I don't yet know why.
 
-However, assuming 2mins to search ~62M hashes:
+However, assuming 2mins to search ~62M hashes:<BR>
 *Throughput =~ 518 281.5 hashes/second.*
+----
+*June 9th, revision 71:*<BR>
+I did some testing; I compared vectors to optimised vectors and arrays, in terms of population time. These were my results:<BR>
+
+The size of the input was 8,000,000 strings of length 0 < length < 17.<BR>
+The optimised vector used 'vector.reserve(8000000)'.<BR>
+I couldn't test an array, as I couldn't increase my stack size to a large enough size (32MB). I'll try again later.<BR>
+|| Vector || O. Vector || Array ||
+|| 23.9 || 15.3 || N/A ||
+|| 16.2 || 15.4 || N/A ||
+|| 16.3 || 15.2 || N/A ||
+|| 21.5 || 15.3 || N/A ||
+|| 16.2 || 15.3 || N/A ||
