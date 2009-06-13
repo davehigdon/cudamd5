@@ -293,7 +293,9 @@ bool doHash(std::vector<std::string>& keys) {
    }
   */
 
-
+  free(keys_h);
+  free(lengths_h);  
+  
   cudaFree(keys_d);
   cudaFree(lengths_d);
   cudaFree(digests_d);

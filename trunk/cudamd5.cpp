@@ -140,7 +140,8 @@ int main(int argc, char *argv[]) {
           for (int i = 0; i < totalPermutations; i++) {
             messages.push_back(message);
             message = p.permutate(message);
-          }    
+          }
+          printf("%d permutations generated.\nSearching...\n", messages.size());    //DEBUG    
           if (!hashByBatch(messages,2000000)){
             fprintf(stderr,"Key not found.\n");
           }
