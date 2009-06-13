@@ -88,7 +88,7 @@ I couldn't test an array, as I couldn't increase my stack size to a large enough
 I fixed the issue that I discovered on June 9th; host memory was not being free()'d. I re-ran the same test, which took ~4mins, and these were my results:<BR>
 
 stefano@stefano-pc:~/Desktop/cudamd5$ time ./cudamd5 -c0123456789abcdefghijklmnopqrstuvwxyz -t95ebc3c7b3b9f1d2c40fec14415d3cb8 --min=1 --max=5 
-Found key: zzzzz�<BR>
+<BR>Found key: zzzzz�<BR>
 62193780 keys searched.<BR>
 
 real    0m55.603s<BR>
