@@ -62,21 +62,40 @@ Found key: zzzzz� <BR>
 real	4m3.933s<BR>
 user	0m57.560s<BR>
 sys	0m8.993s<BR>
-
 It took 30 seconds to initialise the 62M string vector, 2mins to do the hashing/searching/cracking and then it seemed to do nothing for 1min33s ... strange. I don't yet know why.
 
 However, assuming 2mins to search ~62M hashes:<BR>
 *Throughput =~ 518 281.5 hashes/second.*
 ----
-*June 9th, revision 71:*<BR>
+*June 11th, revision 71:*<BR>
 I did some testing; I compared vectors to optimised vectors and arrays, in terms of population time. These were my results:<BR>
 
 The size of the input was 8,000,000 strings of length 0 < length < 17.<BR>
 The optimised vector used 'vector.reserve(8000000)'.<BR>
-I couldn't test an array, as I couldn't increase my stack size to a large enough size (32MB). I'll try again later.<BR>
+I couldn't test an array, as I couldn't increase my stack size to a large enough size (32MB). I'll try again later.
+
 || Vector || O. Vector || Array ||
 || 23.9 || 15.3 || N/A ||
 || 16.2 || 15.4 || N/A ||
 || 16.3 || 15.2 || N/A ||
 || 21.5 || 15.3 || N/A ||
 || 16.2 || 15.3 || N/A ||
+
+----
+
+*June 13th, revision 72:*<BR>
+
+I fixed the issue that I discovered on June 9th; host memory was not being free()'d. I re-ran the same test, which took ~4mins, and these were my results:<BR>
+
+stefano@stefano-pc:~/Desktop/cudamd5$ time ./cudamd5 -c0123456789abcdefghijklmnopqrstuvwxyz -t95ebc3c7b3b9f1d2c40fec14415d3cb8 --min=1 --max=5 
+Found key: zzzzz�<BR>
+62193780 keys searched.<BR>
+
+real    0m55.603s<BR>
+user    0m52.683s<BR>
+sys     0m2.924s<BR>
+
+Key generation took approximately 29seconds.
+
+*Throughput =~ 1,130,796 hashes/second.* (With key generation time)<BR>
+*Throughput =~ 2,392,068 hashes/second.* (Without key generation time)
