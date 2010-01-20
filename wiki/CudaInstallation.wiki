@@ -1,0 +1,30 @@
+#summary CUDA Installation Guide
+
+= CUDA Installation Guide =
+
+  * Download Cuda (drivers,toolkit,sdk)
+
+  * Install drivers
+    * Uninstall old drivers (I used 'envyng -t' to do this) ([important!])
+    * chmod +x NVIDIA-Linux-x86-185.18.14-pkg1.run
+    * Ctrl+Alt+F3 & log-in
+    * sudo /etc/init.d/gdm stop
+    * sudo ./NVIDIA-Linux-x86-185.18.14-pkg1.run (compile kernel and allow xconf)
+    * sudo shutdown -r now
+
+  * Install Toolkit
+    * chmod +x cudatoolkit_2.2_linux_32_rhel5.3.run
+    * sudo ./cudatoolkit_2.2_linux_32_rhel5.3.run
+
+  * Install SDK
+    * chmod +x cudasdk_2.21_linux.run
+    * sudo ./cudasdk_2.21_linux.run
+
+  * Export Paths
+    export PATH=$PATH:/usr/local/cuda/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
+  * Install Packages ([Needed to compile SDK examples])
+
+    * sudo apt-get install freeglut3-dev build-essential
+    * sudo apt-get install libxi-dev
+    * sudo apt-get install libxmu-dev
