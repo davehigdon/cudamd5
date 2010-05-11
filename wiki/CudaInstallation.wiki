@@ -25,6 +25,8 @@
     * export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
   * Install Packages ([Needed to compile SDK examples])
 
-    * sudo apt-get install freeglut3-dev build-essential
+    * sudo apt-get install freeglut3-dev
+    * sudo apt-get install build-essential
     * sudo apt-get install libxi-dev
     * sudo apt-get install libxmu-dev
+    * sudo apt-get install libqt4-dev          (for cudaprof, at least as of CUDA 3.0)
