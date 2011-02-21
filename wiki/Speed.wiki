@@ -112,3 +112,6 @@ Average time taken (5 runs): 27.272 seconds
 
 1,370,581,547 were searched in 27.272 seconds which gives us a speed of:<BR>
 *Throughput =~ 50,255,997 hashes/second.*
+
+Update: Ran this exactly, but on a C2050, and it completed in 2.543 seconds. <BR>
+*Throughput =~ 137M hash/sec.*
